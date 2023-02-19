@@ -1,0 +1,13 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.6, pytest-7.2.1, pluggy-1.0.0 -- /home/dhanush/venvs/bigdata_env/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/dhanush/Big_data/Assignment_01
+plugins: anyio-3.6.2
+collecting ... collected 4 items
+
+test.py::test_link_nexrad_streamlit PASSED                               [ 25%]
+test.py::test_goes18_link_generation PASSED                              [ 50%]
+test.py::test_goes_file_retrival_main PASSED                             [ 75%]
+test.py::test_nexrad_file_retrival_main PASSED                           [100%]
+
+============================== 4 passed in 37.63s ==============================
