@@ -35,6 +35,7 @@ def createConnection():
         s3client (boto3.client): The boto3 client object
     """
 
+
     s3client = boto3.client('s3',
     region_name= "us-east-1",
     aws_access_key_id=os.environ.get('AWS_ACCESS_KEY1'),
@@ -43,10 +44,6 @@ def createConnection():
     write_logs("Connection to S3 bucket created")
 
     return s3client
-
-
-
-
 
     
 
