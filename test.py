@@ -2,13 +2,15 @@ import pytest
 import sys
 import os
 import json
-sys.path.append('../Assignment_02')
-import api_code
+import os
+
+
+import api_codes.nexrad_api as nexrad_api
 
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
-client = TestClient(api_code.app)
+client = TestClient(nexrad_api.app)
 
 def test_link_nexrad_streamlit():
 
@@ -71,49 +73,6 @@ def test_link_nexrad_streamlit():
     assert response.status_code == 200
     url = response.json()['Public S3 URL']
     assert url == "https://noaa-nexrad-level2.s3.amazonaws.com/2003/07/17/KBOX/KBOX20030717_014732.gz"
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
