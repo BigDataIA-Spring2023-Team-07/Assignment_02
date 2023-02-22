@@ -1,10 +1,13 @@
 import pytest
 import sys
-sys.path.append('../Assignment_01')
-from backend import nexrad_main
-from backend import goes_file_retrieval_main
-from backend import nexrad_file_retrieval_main
-from backend import main_goes18
+sys.path.append('../Assignment_02')
+import api
+# sys.path.append('../Assignment_01')
+# from backend import nexrad_main
+# from backend import goes_file_retrieval_main
+# from backend import nexrad_file_retrieval_main
+# from backend import main_goes18
+
 
 def test_link_nexrad_streamlit():
     
