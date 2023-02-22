@@ -85,7 +85,7 @@ def get_distinct_day(yearSelected, monthSelected):
     
     connection = sqlite3.connect(database_path)
     cursor = connection.cursor()
-    day = pd.read_sql_query("SELECT DISTINCT Day FROM nexrad_" + yearSelected + " WHERE Month = " + monthSelected, connection)
+    day = pd.read_sql_query("SELECT DISTINCT Day FROM nexrad_" + yearSelected + " WHERE year = " + yearSelected + " AND Month = " + monthSelected, connection)
     day = day['Day'].tolist()
     day.insert(0, None)
     return day
@@ -105,10 +105,10 @@ def get_distinct_station(yearSelected, monthSelected, daySelected):
         
     connection = sqlite3.connect(database_path)
     cursor = connection.cursor()
-    station = pd.read_sql_query("SELECT DISTINCT Station FROM nexrad_" + yearSelected + " WHERE Month = " + monthSelected + " AND Day = " + daySelected, connection)
-    station = station['Station'][0]
-    station = ast.literal_eval(station)
+    station = pd.read_sql_query("SELECT DISTINCT Station FROM nexrad_" + yearSelected + " where year = " + yearSelected + " and month = " + monthSelected + " and day = " + daySelected, connection)
+    station = station['Station'].tolist()
     station.insert(0, None)
+    print(station)
     return station
     
 

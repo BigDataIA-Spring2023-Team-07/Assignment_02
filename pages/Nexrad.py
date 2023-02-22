@@ -97,10 +97,15 @@ if yearSelected != None:
 
                 with st.spinner('Generating Custom Link...'):
 
+                    monthSelected = str(monthSelected)
+                    daySelected = str(daySelected)
+                    stationSelected = str(stationSelected)
+
                     if len(monthSelected) == 1:
                         monthSelected = '0' + monthSelected
                     if len(daySelected) == 1:
                         daySelected = '0' + daySelected
+
                     
                     FASTAPI_URL = "http://localhost:8000/nexrad_s3_fetch_key"
                     response = requests.get(FASTAPI_URL, json={"year": yearSelected, "month": monthSelected, "day": daySelected, "station": stationSelected, "file": fileSelected})
