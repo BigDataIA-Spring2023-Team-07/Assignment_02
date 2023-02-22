@@ -402,7 +402,7 @@ async def s3_url(user_purl: goes_url):
         response = requests.get(url)
         
         if response.status_code == 200:
-            return {'NOAAURL': url}
+            return {'S3URL': url}
         else:
             return Response(status_code=status.HTTP_404_NOT_FOUND)
      
