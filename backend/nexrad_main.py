@@ -1,3 +1,4 @@
+import ast
 import time
 import pandas as pd
 import os
@@ -50,44 +51,66 @@ def createConnection():
 
     return s3client
 
-    
-
-def listFiles(year, month, day, station):
-
-    """Lists the files in the S3 bucket baswed on the given year, month, day and station
-    Args:
-        year (str): year chosen by the user
-        month (str): month chosen by the user
-        day (str): day chosen by the user
-        station (str): station chosen by the user
-    Returns:
-        tuple: Returns the tuple list of all the files available for the given year, month, day and station
-    """
-
-    s3 = createConnection()
-    lst = []
-    bucket = 'noaa-nexrad-level2'
-    result = s3.list_objects(Bucket=bucket, Prefix= year + "/" + month + "/" + day + "/" + station + "/", Delimiter='/')
-    for o in result.get('Contents'):
-        lst.append(o.get('Key').split('/')[4])
-
-    write_logs("files retrieved for the given year, month, day and station from the S3 bucket")
-    return tuple(lst) 
 
 
 def get_distinct_month(yearSelected):
+
+    """This function fetches the distinct months from the database
+
+    Args:
+        yearSelected (string): The year selected by the user
+
+    Returns:
+        month (list): The list of months
+    """
 
     connection = sqlite3.connect(database_path)
     cursor = connection.cursor()
     month = pd.read_sql_query("SELECT DISTINCT Month FROM nexrad_" + yearSelected, connection)
     month = month['Month'].tolist()
     month.insert(0, None)
-
     return month
+
+def get_distinct_day(yearSelected, monthSelected):
+
+    """This function fetches the distinct days from the database
     
+    Args:
+        yearSelected (string): The year selected by the user
+        monthSelected (string): The month selected by the user
+        
+    Returns:
+        day (list): The list of days
+    """
+    
+    connection = sqlite3.connect(database_path)
+    cursor = connection.cursor()
+    day = pd.read_sql_query("SELECT DISTINCT Day FROM nexrad_" + yearSelected + " WHERE Month = " + monthSelected, connection)
+    day = day['Day'].tolist()
+    day.insert(0, None)
+    return day
 
+def get_distinct_station(yearSelected, monthSelected, daySelected):
 
+    """This function fetches the distinct stations from the database
 
+    Args:
+        yearSelected (string): The year selected by the user
+        monthSelected (string): The month selected by the user
+        daySelected (string): The day selected by the user
+    
+    Returns:
+        station (list): The list of stations
+    """
+        
+    connection = sqlite3.connect(database_path)
+    cursor = connection.cursor()
+    station = pd.read_sql_query("SELECT DISTINCT Station FROM nexrad_" + yearSelected + " WHERE Month = " + monthSelected + " AND Day = " + daySelected, connection)
+    station = station['Station'][0]
+    station = ast.literal_eval(station)
+    station.insert(0, None)
+    return station
+    
 
 
 def write_logs(message):
@@ -108,12 +131,6 @@ def write_logs(message):
     }
     ]
     )
-
-
-
-
-
-
 
 
 
@@ -208,8 +225,6 @@ def write_logs(message):
 
 #     df = pd.DataFrame({'Year': year, 'Month': month_lst, 'Day': day_lst, 'Station': station_lst})
 #     df.to_csv(os.path.join(data_path, 'nexrad_data_' + year + '.csv'), index=False)
-
-
 
 
 
