@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import sys
-sys.path.append('../Assignment_01')
+sys.path.append('../Assignment_02')
 from backend import main_goes18
 import requests
 
