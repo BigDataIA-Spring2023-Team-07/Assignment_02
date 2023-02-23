@@ -5,14 +5,10 @@ from airflow.operators.python import PythonOperator
 from airflow.utils.dates import days_ago
 from airflow.models.param import Param
 from datetime import timedelta
-import os
-import json
 import pandas as pd
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 import boto3
 import sqlite3
-
-
 
 
 
@@ -81,7 +77,6 @@ def createJson(year):
     return generatedJson
 
 
-
 def upload_csv_to_S3(df, year):
     """Uploads the given dataframe to S3
 
@@ -98,7 +93,7 @@ def upload_csv_to_S3(df, year):
     df.to_csv(csv_buffer, index=False)
 
     bucket_name = 'damg7245-team7'
-    s3_key = 'nexrad_data/' + year + '.csv'
+    s3_key = 'data/' + year + '.csv'
     s3_resource.Object(bucket_name, s3_key).put(Body=csv_buffer.getvalue())
 
 
@@ -162,13 +157,76 @@ def generateCsv(year):
     # close the database connection
     conn.close()
 
+##GOES18 workflow
+def uploadcsv_goes_s3(df):
+    """Uploads the given dataframe to S3
 
+    Args:
+        df (Dataframe): Dataframe to be uploaded to S3
+    """
+    s3 = S3Hook(aws_conn_id='My AWS Connection', region_name='us-east-1')
+    aws_credentials = s3.get_credentials()
+    s3_resource = boto3.resource('s3', aws_access_key_id=aws_credentials.access_key, aws_secret_access_key=aws_credentials.secret_key, region_name='us-east-1')
+    csv_buffer = io.StringIO()
+    df.to_csv(csv_buffer, index=False)
 
+    bucket_name = 'damg7245-team7'
+    s3_key = 'data/df_goes18.csv'
+    s3_resource.Object(bucket_name, s3_key).put(Body=csv_buffer.getvalue())
+
+def create_goes_df():
+    """for creatign dataframe of all the files in a particular station
+
+    Args:
+        client_id (boto3.client): aws client id
+    """
+    client_id=create_s3_client()
+    # write_logs("fetching objects in NOAA s3 bucket")
+    paginator = client_id.get_paginator('list_objects_v2')
+    noaa_bucket = paginator.paginate(Bucket='noaa-goes18', PaginationConfig={"PageSize": 50})
+    # write_logs("Writing Files in list from NOAA bucket")
+    station=[]
+    year=[]
+    day=[]
+    hour=[]
     
+    for count, page in enumerate(noaa_bucket):
+        files = page.get("Contents")
+        for file in files:
+            
+            if 'ABI-L1b-RadC' not in file['Key'].split("/")[0]:
+                break
+            
+            # if ((file['Key'].split("/")[0] not in station) or (file['Key'].split("/")[1] not in year) or (file['Key'].split("/")[2] not in day) or (file['Key'].split("/")[3] not in hour)):
+            station.append(file['Key'].split("/")[0])
+            year.append(file['Key'].split("/")[1])
+            day.append(file['Key'].split("/")[2])
+            hour.append(file['Key'].split("/")[3])
+            print(file['Key'])
+        else:
+            continue
+        break
+        
+    df_goes18=pd.DataFrame({'Station': station,
+     'Year': year,
+     'Day': day,
+     'Hour': hour
+    })
+    df_goes18.drop_duplicates(inplace=True)
+    
+    uploadcsv_goes_s3(df_goes18)
+    # df_goes18.to_csv('data/df_goes18.csv',index=False)
+    # write_logs("File created in data folder")
+    
+    # create a connection to the SQLite database
+    conn = sqlite3.connect('assignment_02.db')
+    
+    # goes18_dat = pd.read_csv('data/df_goes18.csv') # load to DataFrame
 
-
-
-
+    df_goes18.to_sql('goes18_metadata', conn, if_exists='replace', index = False) # write to sqlite table
+    
+    # close the database connection
+    conn.close()
 
 
 with dag:
@@ -185,11 +243,21 @@ with dag:
         op_kwargs={'year': '2023'}
     )
     
+    generate_csv_goes = PythonOperator(
+        task_id="generate_csv_goes",
+        python_callable=create_goes_df
+    )
+    
     upload_database_to_S3 = PythonOperator(
         task_id="upload_database_to_S3",
         python_callable=upload_database_to_S3
 
     )
 
-    generate_csv_2022 >> generate_csv_2023 >> upload_database_to_S3
+    generate_csv_2022 >> generate_csv_2023>> generate_csv_goes >> upload_database_to_S3
+
+
+
+
+
 
