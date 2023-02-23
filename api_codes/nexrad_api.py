@@ -60,6 +60,24 @@ class Nexrad_S3_generate_url(BaseModel):
     user_key: str
 
 
+@app.get('/nexrad_s3_fetch_db')
+async def nexrad_s3_fetch_db():
+
+    """Fetches the database from the S3 bucket
+    
+    Args:
+        None
+        
+    Returns:
+        None"""
+
+    nexrad_main.fetch_db()
+
+    return Response(status_code=status.HTTP_200_OK)
+    
+
+
+
 @app.get('/nexrad_s3_fetch_month')
 async def nexrad_s3_fetch_month(nexrad_s3_fetch_month: Nexrad_S3_fetch_month):
 
@@ -75,13 +93,10 @@ async def nexrad_s3_fetch_month(nexrad_s3_fetch_month: Nexrad_S3_fetch_month):
     if not re.match(r"^[0-9]{4}$", nexrad_s3_fetch_month.yearSelected):
         return Response(status_code=status.HTTP_400_BAD_REQUEST)
 
-    # if int(nexrad_s3_fetch_month.yearSelected) < 2022 or int(nexrad_s3_fetch_month.yearSelected) > 2023:
-    #     return Response(status_code=status.HTTP_400_BAD_REQUEST)
+    if int(nexrad_s3_fetch_month.yearSelected) < 2022 or int(nexrad_s3_fetch_month.yearSelected) > 2023:
+        return Response(status_code=status.HTTP_400_BAD_REQUEST)
 
-    else:
-
-
-        return {"Month": nexrad_main.get_distinct_month(nexrad_s3_fetch_month.yearSelected)}
+    return {"Month": nexrad_main.get_distinct_month(nexrad_s3_fetch_month.yearSelected)}
 
 @app.get('/nexrad_s3_fetch_day')
 async def nexrad_s3_fetch_day(nexrad_s3_fetch_day: Nexrad_S3_fetch_day):
@@ -97,15 +112,15 @@ async def nexrad_s3_fetch_day(nexrad_s3_fetch_day: Nexrad_S3_fetch_day):
         
     # In the database the month is stored as 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 but in the bucket its stored as 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12
 
+
     if not re.match(r"^(1[0-2]|[1-9])$", nexrad_s3_fetch_day.month):
         return Response(status_code=status.HTTP_400_BAD_REQUEST)
 
     if int(nexrad_s3_fetch_day.month) < 1 or int(nexrad_s3_fetch_day.month) > 12 :
         return Response(status_code=status.HTTP_400_BAD_REQUEST)
     
-    else:
 
-        return {"Day": nexrad_main.get_distinct_day(nexrad_s3_fetch_day.year, nexrad_s3_fetch_day.month)}
+    return {"Day": nexrad_main.get_distinct_day(nexrad_s3_fetch_day.year, nexrad_s3_fetch_day.month)}
 
 @app.get('/nexrad_s3_fetch_station')
 async def nexrad_s3_fetch_station(nexrad_s3_fetch_station: Nexrad_S3_fetch_station):
@@ -130,8 +145,6 @@ async def nexrad_s3_fetch_station(nexrad_s3_fetch_station: Nexrad_S3_fetch_stati
 
     else:
         return {"Station": nexrad_main.get_distinct_station(nexrad_s3_fetch_station.year, nexrad_s3_fetch_station.month, nexrad_s3_fetch_station.day)}
-
-
 
 
 

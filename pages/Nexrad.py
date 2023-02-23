@@ -18,6 +18,13 @@ database_path = os.path.join('data/', database_file_name)
 data_files = os.listdir('data/')
 
 
+FASTAPI_URL = "http://localhost:8000/nexrad_s3_fetch_db"
+response = requests.get(FASTAPI_URL)
+if response.status_code == 200:
+    st.success("Successfully connected to the database")
+else:
+    st.error("Failed to connect to the database")
+
 st.title("Generate Link Nexrad")
 
 
@@ -65,47 +72,65 @@ if yearSelected != None:
                     'Select the station',
                     tuple(station), key = 'station')
 
-            
-            # User selects the file
-            if stationSelected != None:
-                FASTAPI_URL = "http://localhost:8000/nexrad_s3_fetch_file"
-                response = requests.get(FASTAPI_URL, json={"year": yearSelected, "month": monthSelected, "day": daySelected, "station": stationSelected})
-                fileSelected = None
-                if response.status_code == 200:
-                    file = response.json()
-                    file = file['File']
-                    fileSelected = st.selectbox(
-                        'Select the file',
-                        tuple(file), key = 'file')
+        
+        # User selects the file
+            with st.spinner('Fetching Files...'):
+                if stationSelected != None:
+                    FASTAPI_URL = "http://localhost:8000/nexrad_s3_fetch_file"
+                    response = requests.get(FASTAPI_URL, json={"year": yearSelected, "month": monthSelected, "day": daySelected, "station": stationSelected})
+                    fileSelected = None
+                    if response.status_code == 200:
+                        file = response.json()
+                        file = file['File']
+                        fileSelected = st.selectbox(
+                            'Select the file',
+                            tuple(file), key = 'file')
 
 
-                if st.button("Submit"):
-                    with st.spinner('Generating Link...'):
-                        FASTAPI_URL = "http://localhost:8000/nexrad_s3_fetchurl"
+            if st.button("Submit"):
+                with st.spinner('Generating Public S3 Link...'):
+                    FASTAPI_URL = "http://localhost:8000/nexrad_s3_fetchurl"
 
-                        response = requests.post(FASTAPI_URL, json={"year": yearSelected, "month": monthSelected, "day": daySelected, "station": stationSelected, "file": fileSelected})
+                    response = requests.post(FASTAPI_URL, json={"year": yearSelected, "month": monthSelected, "day": daySelected, "station": stationSelected, "file": fileSelected})
+                    if response.status_code == 200:
+                        generated_url = response.json()
+                        st.success("Successfully generated Public S3 link")
+                        st.markdown("**Public URL**")
+
+                        st.write(generated_url['Public S3 URL'])
+                    else:
+                        st.error("Error in generating Public S3 link")
+                        st.write(response.json())
+
+                with st.spinner('Generating Custom Link...'):
+
+                    monthSelected = str(monthSelected)
+                    daySelected = str(daySelected)
+                    stationSelected = str(stationSelected)
+
+                    if len(monthSelected) == 1:
+                        monthSelected = '0' + monthSelected
+                    if len(daySelected) == 1:
+                        daySelected = '0' + daySelected
+
+                    
+                    FASTAPI_URL = "http://localhost:8000/nexrad_s3_fetch_key"
+                    response = requests.get(FASTAPI_URL, json={"year": yearSelected, "month": monthSelected, "day": daySelected, "station": stationSelected, "file": fileSelected})
+                    if response.status_code == 200:
+                        obj_key = response.json()['Key']
+
+                        FASTAPI_URL = "http://localhost:8000/nexrad_s3_upload"
+                        response = requests.post(FASTAPI_URL, json={"key": obj_key, "source_bucket": 'noaa-nexrad-level2', "target_bucket": 'damg7245-team7'})
                         if response.status_code == 200:
-                            st.success("Successfully generated Public S3 link")
-                            generated_url = response.json()
-                            st.markdown("**Public URL**")
-                            st.write(generated_url['Public S3 URL'])
-                        else:
-                            st.error("Error in generating Public S3 link")
-                            st.write(response.json())
+                            user_key = response.json()['Uploaded_Key']
+                            FASTAPI_URL = "http://localhost:8000/nexrad_s3_generate_user_link"
 
-                        with st.spinner('Generating Link...'):
-                            st.success('Link Generated for User S3 Bucket')
-                            st.markdown("**AWS S3 URL**")
-
-                            if len(monthSelected) == 1:
-                                monthSelected = '0' + monthSelected
-                            if len(daySelected) == 1:
-                                daySelected = '0' + daySelected
-
-                            obj_key = nexrad_main.getKey(yearSelected, monthSelected, daySelected, stationSelected, fileSelected)
-                            user_key = nexrad_main.uploadFiletoS3(obj_key, 'noaa-nexrad-level2', 'damg7245-team7')
-                            user_url = nexrad_main.generateUserLink('damg7245-team7' ,user_key)
-                            st.write(user_url)
+                            response = requests.post(FASTAPI_URL, json={"target_bucket": 'damg7245-team7', "user_key": user_key})
+                            if response.status_code == 200:
+                                user_url = response.json()['User S3 URL']
+                                st.success("Successfully uploaded to User S3 Bucket")
+                                st.markdown("**AWS S3 URL**")
+                                st.write(user_url)
 
 
 
