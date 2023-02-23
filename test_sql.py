@@ -1,16 +1,19 @@
 
-import pandas as pd
-import sqlite3
+import os
+from backend import nexrad_main
+import boto3
 
-# read the CSV file into a DataFrame
-df = pd.read_csv('data/nexrad_2023.csv')
 
-# create a connection to the SQLite database
-conn = sqlite3.connect('assignment_01.db')
 
-# write the DataFrame to the database
-table_name = 'nexrad_2023'
-df.to_sql(table_name, conn, if_exists='replace', index=False)
 
-# close the database connection
-conn.close()
+
+
+
+
+s3 = nexrad_main.createConnection()
+
+bucket_name = 'damg7245-team7'
+key = 'database.db' # name of the file in the bucket
+
+# Download the file from S3 and save it locally
+s3.download_file(bucket_name, key, os.path.join('data' , 'database.db'))

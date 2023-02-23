@@ -9,10 +9,13 @@ import random, string
 import logging
 import sqlite3
 import sys
+import shutil
+
+
 cwd = os.getcwd()
 
 
-logging.basicConfig(filename = 'assignment_01.log',level=logging.INFO, force= True, format='%(asctime)s:%(levelname)s:%(message)s')
+# logging.basicConfig(filename = 'assignment_01.log',level=logging.INFO, force= True, format='%(asctime)s:%(levelname)s:%(message)s')
 
 
 load_dotenv()
@@ -22,13 +25,32 @@ project_dir = os.path.abspath(os.path.join(cwd, '..'))
 sys.path.insert(0, project_dir)
 os.environ['PYTHONPATH'] = project_dir + ':' + os.environ.get('PYTHONPATH', '')
 
-database_path = os.path.join(project_dir, 'data', 'assignment_01.db')
+database_path = os.path.join(project_dir, 'data' , 'database.db')
+
+
 
 
 clientlogs = boto3.client('logs',
 region_name= "us-east-1",
 aws_access_key_id=os.environ.get('AWS_LOG_ACCESS_KEY'),
 aws_secret_access_key=os.environ.get('AWS_LOG_SECRET_KEY'))
+
+
+def fetch_db():
+
+    s3 = createConnection()
+    bucket_name = "damg7245-team7"
+    key = "database.db"
+    s3.download_file(bucket_name, key, 'database.db')
+
+    source_file = 'api_codes/database.db'
+    source_file = os.path.join(project_dir, source_file)
+    destination_file = 'data/database.db'
+    destination_file = os.path.join(project_dir, destination_file)
+
+    # Move the file to the destination directory
+    shutil.move(source_file, destination_file)
+
 
 
 
@@ -108,7 +130,6 @@ def get_distinct_station(yearSelected, monthSelected, daySelected):
     station = pd.read_sql_query("SELECT DISTINCT Station FROM nexrad_" + yearSelected + " where year = " + yearSelected + " and month = " + monthSelected + " and day = " + daySelected, connection)
     station = station['Station'].tolist()
     station.insert(0, None)
-    print(station)
     return station
     
 
@@ -132,99 +153,6 @@ def write_logs(message):
     ]
     )
 
-
-
-
-# def createJson(year):
-#     """Creates a json file with the nexrad data
-
-#     Args:
-#         year (string): The year to be used to create the json file
-
-#     Returns:
-#         generatedJson (Json): Generated Json based on the fiven year
-#     """
-    
-#     generatedJson = {}
-#     s3 = createConnection()
-
-#     bucket = 'noaa-nexrad-level2'
-#     paginator = s3.get_paginator('list_objects')
-#     config = {"PageSize":100}
-#     operation_parameters = {'Bucket': bucket,
-#                         'Prefix': year + "/",
-#                         'Delimiter':'/',
-#                         'PaginationConfig': config}
-                        
-
-#     result = paginator.paginate(**operation_parameters)
-
-#     for page in result:
-#         for o in page.get('CommonPrefixes'):
-#             generatedJson[o.get('Prefix').split('/')[1]] = {}
-    
-#     for m in list(generatedJson.keys()):
-#         result = s3.list_objects(Bucket=bucket, Prefix= year + "/" + m + '/' , Delimiter='/')
-#         for o in result.get('CommonPrefixes'):
-#             generatedJson[m][o.get('Prefix').split('/')[2]] = []
-
-#     for m in list(generatedJson.keys()):
-#         for d in list(generatedJson[m].keys()):
-#             result = s3.list_objects(Bucket=bucket, Prefix= year + '/' +m+'/'+d+'/', Delimiter='/')
-#             for o in result.get('CommonPrefixes'):
-#                 generatedJson[m][d].append(o.get('Prefix').split('/')[3])
-
-
-#     return generatedJson
-
-
-
-
-# def grabData():
-
-#     """Grabs the data from the S3 bucket and creates a json file for each year"""
-
-#     # Call grab data function to create Json for year 2022 and 2023
-
-#     year = ['2022', '2023']
-
-#     for y in year:
-
-#         data_files = os.listdir('data/')
-#         if 'nexrad_data_'+str(y)+'.json' not in data_files:
-#             with open(os.path.join('data/', 'nexrad_data_'+str(y)+'.json'), 'w') as outfile:
-#                 json.dump(createJson(y), outfile)
-#                 logging.info("Json file created for the year " + str(y))
-
-
-
-
-# def generateCsv(year):
-
-#     """Generates the csv file for the given year
-    
-#     Args:
-#         year (str): year for which the CSV file is to be generated
-#     """
-
-#     month_lst = []
-#     day_lst = []
-#     station_lst = []
-
-
-#     with open('data/nexrad_data_' + year + '.json') as user_file:
-#         file_contents = user_file.read()
-#     data = json.loads(file_contents)
-
-
-#     for month in data:
-#         for day in data[month]:
-#             month_lst.append(month)
-#             day_lst.append(day)
-#             station_lst.append(data[month][day])
-
-#     df = pd.DataFrame({'Year': year, 'Month': month_lst, 'Day': day_lst, 'Station': station_lst})
-#     df.to_csv(os.path.join(data_path, 'nexrad_data_' + year + '.csv'), index=False)
 
 
 

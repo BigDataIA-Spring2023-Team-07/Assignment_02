@@ -18,6 +18,13 @@ database_path = os.path.join('data/', database_file_name)
 data_files = os.listdir('data/')
 
 
+FASTAPI_URL = "http://localhost:8000/nexrad_s3_fetch_db"
+response = requests.get(FASTAPI_URL)
+if response.status_code == 200:
+    st.success("Successfully connected to the database")
+else:
+    st.error("Failed to connect to the database")
+
 st.title("Generate Link Nexrad")
 
 
