@@ -72,6 +72,7 @@ async def nexrad_s3_fetch_db():
         None"""
 
     nexrad_main.fetch_db()
+    nexrad_main.write_logs("Status: 200, Message: Database fetched from S3 bucket")
 
     return Response(status_code=status.HTTP_200_OK)
     
@@ -96,6 +97,8 @@ async def nexrad_s3_fetch_month(nexrad_s3_fetch_month: Nexrad_S3_fetch_month):
     if int(nexrad_s3_fetch_month.yearSelected) < 2022 or int(nexrad_s3_fetch_month.yearSelected) > 2023:
         return Response(status_code=status.HTTP_400_BAD_REQUEST)
 
+    nexrad_main.write_logs("Status: 200, Message: Month list generated for the year " + nexrad_s3_fetch_month.yearSelected)
+
     return {"Month": nexrad_main.get_distinct_month(nexrad_s3_fetch_month.yearSelected)}
 
 @app.get('/nexrad_s3_fetch_day')
@@ -119,6 +122,7 @@ async def nexrad_s3_fetch_day(nexrad_s3_fetch_day: Nexrad_S3_fetch_day):
     if int(nexrad_s3_fetch_day.month) < 1 or int(nexrad_s3_fetch_day.month) > 12 :
         return Response(status_code=status.HTTP_400_BAD_REQUEST)
     
+    nexrad_main.write_logs("Status: 200, Message: Day list generated for the month " + nexrad_s3_fetch_day.month + " of the year " + nexrad_s3_fetch_day.year)
 
     return {"Day": nexrad_main.get_distinct_day(nexrad_s3_fetch_day.year, nexrad_s3_fetch_day.month)}
 
@@ -144,6 +148,7 @@ async def nexrad_s3_fetch_station(nexrad_s3_fetch_station: Nexrad_S3_fetch_stati
         return Response(status_code=status.HTTP_400_BAD_REQUEST)
 
     else:
+        nexrad_main.write_logs("Status: 200, Message: Station list generated for the day " + nexrad_s3_fetch_station.day + " of the month " + nexrad_s3_fetch_station.month + " of the year " + nexrad_s3_fetch_station.year)
         return {"Station": nexrad_main.get_distinct_station(nexrad_s3_fetch_station.year, nexrad_s3_fetch_station.month, nexrad_s3_fetch_station.day)}
 
 
@@ -182,7 +187,7 @@ async def nexrad_s3_fetch_file(nexrad_s3_fetch_file: Nexrad_S3_fetch_file):
         for o in result.get('Contents'):
             lst.append(o.get('Key').split('/')[4])
 
-        nexrad_main.write_logs("files retrieved for the given year, month, day and station from the S3 bucket")
+        nexrad_main.write_logs("Status: 200, Message: File list generated for the station " + nexrad_s3_fetch_file.station + " of the day " + nexrad_s3_fetch_file.day + " of the month " + nexrad_s3_fetch_file.month + " of the year " + nexrad_s3_fetch_file.year)
         return {"File": lst} 
 
 
@@ -223,6 +228,7 @@ async def nexrad_s3_fetchurl(nexrad_s3_fetch: Nexrad_S3_fetch_url):
             nexrad_main.write_logs(url)
             return {"Public S3 URL": url}
         else:
+            nexrad_main.write_logs("Status: 404, Message: File not found")
             return Response(status_code=status.HTTP_404_NOT_FOUND)
 
 
@@ -248,6 +254,7 @@ async def getKey(nexrad_s3_fetch: Nexrad_S3_fetch_url):
     + "/" , Delimiter='/')
     for o in result.get('Contents'):
         if nexrad_s3_fetch.file in o.get('Key'):
+            nexrad_main.write_logs("Status: 200, Message: Key generated for the file " + nexrad_s3_fetch.file)
             return {'Key' : (o.get('Key'))}
 
 @app.post('/nexrad_s3_upload')
