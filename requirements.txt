@@ -55,3 +55,12 @@ tzlocal==4.2
 urllib3==1.26.14
 validators==0.20.0
 zipp==3.12.1
+python-multipart==0.0.5
+cryptography==39.0.1
+streamlit-authenticator==0.2.1
+python-jose==3.3.0
+bcrypt==4.0.1
+passlib==1.7.4
+unicorn==1.0.3
+fastapi==0.92.0
+gunicorn==20.1.0
