@@ -5,17 +5,16 @@
 **Streamlit link:** 
 
 
+#### Architecture Diagram
+![alt text](project_2.png)
 
 
+#### Steps to run the project
 
-
-
-
-
-
-
-
-
+1. Clone the repository
+2. Install the requirements using `pip install -r requirements.txt`
+3. Run the streamlit app using `streamlit run app.py`
+4. Run the uvicorn server using `uvicorn main:app --reload`
 
 
 

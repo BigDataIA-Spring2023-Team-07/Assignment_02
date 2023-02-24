@@ -18,8 +18,8 @@ load_dotenv()
 #     level=LOGLEVEL,
 #     datefmt='%Y-%m-%d %H:%M:%S')
 
-database_file_name = 'goes18.db'
-database_file_path = os.path.join('data/',database_file_name)
+database_file_path = 'database.db'
+# database_file_path = os.path.join('data/',database_file_name)
 
 clientlogs = boto3.client('logs',
 region_name= "us-east-1",
@@ -129,13 +129,13 @@ def fetch_db():
     key = "database.db"
     s3.download_file(bucket_name, key, 'database.db')
 
-    source_file = 'database.db'
-    source_file = os.path.join('../Assignment_02', source_file)
-    destination_file = 'data/database.db'
-    destination_file = os.path.join('../Assignment_02', destination_file)
+    # source_file = 'database.db'
+    # source_file = os.path.join('../Assignment_02', source_file)
+    # destination_file = 'data/database.db'
+    # destination_file = os.path.join('../Assignment_02', destination_file)
 
-    # Move the file to the destination directory
-    shutil.move(source_file, destination_file)
+    # # Move the file to the destination directory
+    # shutil.move(source_file, destination_file)
 
 
 def db_connection():
@@ -145,7 +145,7 @@ def db_connection():
         conn: connection to database
     """
     try:
-        conn = sqlite3.connect("data/goes18.db")
+        conn = sqlite3.connect("database.db")
         write_logs("Connected to db")    
     except Exception as e:
         print(e)
@@ -163,7 +163,7 @@ def grab_station():
     conn=db_connection()
     cursor = conn.cursor()
     stations= pd.read_sql_query('SELECT distinct station FROM goes18_metadata', conn)
-    stations_list=stations.station.tolist()
+    stations_list=stations.Station.tolist()
     conn.close()
     
     return stations_list
@@ -181,7 +181,7 @@ def grab_years(station):
     conn=db_connection()
     cursor = conn.cursor()
     years= pd.read_sql_query('SELECT distinct "year" FROM goes18_metadata where station="{}"'.format(station), conn)
-    year_list=years.year.tolist()
+    year_list=years.Year.tolist()
     
     conn.close()
     write_logs("Years listed for given station")
@@ -202,7 +202,7 @@ def grab_days(station,years):
     conn=db_connection()
     cursor = conn.cursor()
     days= pd.read_sql_query('SELECT distinct "day" FROM goes18_metadata where station="{}" and "year"={}'.format(station,years), conn)
-    day_list = days.day.tolist()
+    day_list = days.Day.tolist()
     day_list=[x.zfill(3) for x in day_list]
 
     conn.close()
@@ -224,7 +224,7 @@ def grab_hours(station,years,days):
     conn=db_connection()
     cursor = conn.cursor()
     hours= pd.read_sql_query('SELECT distinct "hour" FROM goes18_metadata where station="{}" and "year"={} and "day"={}'.format(station,years,days), conn)
-    hour_list=hours.hour.tolist()
+    hour_list=hours.Hour.tolist()
     hour_list=[x.zfill(2) for x in hour_list]
     conn.close()
     write_logs("Hours listed for given station,year,day")

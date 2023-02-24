@@ -20,8 +20,8 @@ os.environ['PYTHONPATH'] = project_dir + ':' + os.environ.get('PYTHONPATH', '')
 
 sys.path.append('../Assignment_02')
 #print(sys.path)
-goes_database_file_name = 'goes18.db'
-goes_database_file_path = os.path.join('data/',goes_database_file_name)
+# goes_database_file_name = 'database.db'
+# goes_database_file_path = os.path.join('data/',goes_database_file_name)
 # Navigate to the project directory
 # sys.path.insert(0, project_dir)
 # print(sys.path)

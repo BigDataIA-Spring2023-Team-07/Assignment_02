@@ -3,9 +3,14 @@ import streamlit as st
 from backend import goes_file_retrieval_main
 import os
 from dotenv import load_dotenv
-
+import webbrowser
 
 load_dotenv()
+
+with st.sidebar:
+    if st.button("Logout"):
+        webbrowser.open("http://localhost:8501/login")
+
 
 ACCESS_TOKEN = os.environ["access_token"]
 headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
@@ -13,7 +18,9 @@ headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
 st.title("Generate NOAA-GOES18 URL BY FILE")
 
 print(ACCESS_TOKEN)
-response = requests.get('http://127.0.0.1:8000/is_logged_in',headers=headers)
+response = requests.get('http://35.229.73.233:8000/is_logged_in',headers=headers)
+
+print(response)
 
 if response.status_code == 200:
     file_name = st.text_input('Enter File Name')
@@ -21,12 +28,12 @@ if response.status_code == 200:
     if st.button('Get URL'):
         with st.spinner('Processing...'):
             if file_name:
-                response = requests.post('http://127.0.0.1:8000/validatefileUrl',json={'file_name': file_name},headers=headers)
+                response = requests.post('http://35.229.73.233:8000/validatefileUrl',json={'file_name': file_name},headers=headers)
                 if response.status_code != 401:
                     validate_res = response.json()['message']
                     st.text("")
                     if validate_res == 'Valid filename':
-                        response1 = requests.post('http://127.0.0.1:8000/getfileUrl',json={'file_name': file_name},headers=headers)
+                        response1 = requests.post('http://35.229.73.233:8000/getfileUrl',json={'file_name': file_name},headers=headers)
                         if response1.status_code!= 401:
                             get_res = response1.json()
                             if get_res['status_code'] == '404':

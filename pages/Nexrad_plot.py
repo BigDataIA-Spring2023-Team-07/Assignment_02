@@ -6,15 +6,20 @@ import requests
 import streamlit as st
 import os
 from dotenv import load_dotenv
-
+import webbrowser
 
 load_dotenv()
+
+with st.sidebar:
+    if st.button("Logout"):
+        webbrowser.open("http://localhost:8501/login")
+
 
 ACCESS_TOKEN = os.environ["access_token"]
 headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
 
 st.title("NEXRAD Station Locations")
-response = requests.post('http://127.0.0.1:8000/retrieve_plot_data',headers=headers)
+response = requests.post('http://35.229.73.233:8000/retrieve_plot_data',headers=headers)
 
 if response.status_code == 200:
     df = pd.DataFrame(response.json()['df_dict'])

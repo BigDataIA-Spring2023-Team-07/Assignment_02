@@ -46,12 +46,12 @@ def fetch_db():
     key = "database.db"
     s3.download_file(bucket_name, key, 'database.db')
 
-    # source_file = 'api_codes/database.db'
+    # source_file = 'database.db'
     # source_file = os.path.join(project_dir, source_file)
     # destination_file = 'data/database.db'
     # destination_file = os.path.join(project_dir, destination_file)
 
-    # Move the file to the destination directory
+    # # Move the file to the destination directory
     # shutil.move(source_file, destination_file)
 
 
