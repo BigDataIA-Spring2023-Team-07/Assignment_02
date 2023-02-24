@@ -79,7 +79,7 @@ def write_logs(message):
     )
 
 @app.get('/goes_station')
-async def grab_station():
+async def grab_station(getCurrentUser: schema.TokenData = Depends(oauth2.get_current_user)):
     """for pulling all the stations in the file from database
 
     Returns:
@@ -91,7 +91,7 @@ async def grab_station():
 
 
 @app.get('/goes_years')
-async def grab_years(user_station: schema.goes_year ):
+async def grab_years(user_station: schema.goes_year, getCurrentUser: schema.TokenData = Depends(oauth2.get_current_user)):
     """for pulling all the years in the station from database
 
     Args:
@@ -112,7 +112,7 @@ async def grab_years(user_station: schema.goes_year ):
         return {'Year':year_list}
 
 @app.get('/goes_days')
-async def grab_months(user_day: schema.goes_day):
+async def grab_months(user_day: schema.goes_day, getCurrentUser: schema.TokenData = Depends(oauth2.get_current_user)):
     """for pulling all the days in the particular station,year from database
 
     Args:
@@ -135,7 +135,7 @@ async def grab_months(user_day: schema.goes_day):
         return {'Day':day_list}
 
 @app.get('/goes_hours')
-async def grab_hours(user_hour: schema.goes_hour):
+async def grab_hours(user_hour: schema.goes_hour, getCurrentUser: schema.TokenData = Depends(oauth2.get_current_user)):
     
     """for pulling all the hours in the file for a particular station,year,day
 
@@ -162,7 +162,7 @@ async def grab_hours(user_hour: schema.goes_hour):
         return {'Hour':hour_list}
 
 @app.get('/goes_files')
-async def grab_files(user_files: schema.goes_file):
+async def grab_files(user_files: schema.goes_file, getCurrentUser: schema.TokenData = Depends(oauth2.get_current_user)):
     """pulls files from noaa18 aws bucket for a set of station, year,day,hour
 
     Args:
@@ -196,7 +196,7 @@ async def grab_files(user_files: schema.goes_file):
 
 
 @app.post('/goes_fetch_url')
-async def create_url(user_url: schema.goes_url):
+async def create_url(user_url: schema.goes_url, getCurrentUser: schema.TokenData = Depends(oauth2.get_current_user)):
     
     if not re.match(r"[A-Za-z0-9\.,;:!?()\"'%\-]+",user_url.station):
         return Response(status_code=status.HTTP_400_BAD_REQUEST)
@@ -225,7 +225,7 @@ async def create_url(user_url: schema.goes_url):
             return Response(status_code=status.HTTP_404_NOT_FOUND)
         
 @app.post('/goes_AWS_url')
-async def s3_url(user_purl: schema.goes_url):
+async def s3_url(user_purl: schema.goes_url, getCurrentUser: schema.TokenData = Depends(oauth2.get_current_user)):
      
     if not re.match(r"[A-Za-z0-9\.,;:!?()\"'%\-]+",user_purl.station):
         return Response(status_code=status.HTTP_400_BAD_REQUEST)
@@ -256,12 +256,7 @@ async def s3_url(user_purl: schema.goes_url):
 
 
 @app.post("/validatefileUrl")
-async def validate_file(validateFile: schema.ValidateFile,getCurrentUser: schema.LoginData = Depends(oauth2.get_current_user())):
-  print("1111111111")
-  print(getCurrentUser.Username)
-  print(getCurrentUser.Password)
-  print("2222222222")
-
+async def validate_file(validateFile: schema.ValidateFile,getCurrentUser: schema.TokenData = Depends(oauth2.get_current_user)):
   filename = validateFile.file_name
   write_logs("Entered file validation function")
   products = ['ABI-L1b-RadF', 'ABI-L1b-RadC', 'ABI-L1b-RadM', 'ABI-L2-ACHAC','ABI-L2-ACHAF','ABI-L2-ACHAM','ABI-L2-ACHTF',
@@ -387,7 +382,6 @@ async def validate_file(validateFile: schema.ValidateFile,getCurrentUser: schema
 
 @app.post("/login")
 async def login(login_data: OAuth2PasswordRequestForm = Depends()):
-    print("read_root")
     try:
         database_file_name = "assignment_01.db"
         database_file_path = os.path.join('data/',database_file_name)
@@ -400,18 +394,16 @@ async def login(login_data: OAuth2PasswordRequestForm = Depends()):
             if pwd_cxt.verify(login_data.password, user['hashed_password'][0]):
                 data = {'message': 'Username verified successfully', 'status_code': '200'}
                 accessToken = access_token.create_access_token(data={"sub": str(user['username'][0])})
-                print(accessToken)
-                print("22222222222")
-                data = {'message': 'Username verified successfully','status_code': '200'}
+                data = {'message': 'Username verified successfully','access_token': accessToken,'status_code': '200'}
             else:
-                data = {'message': 'Password is incorrect','status_code': '401'}
+                data = {'message': 'Password is incorrect' ,'status_code': '401'}
     except Exception as e:
         print("Exception occured in login function")
         data = {'message': str(e),'status_code': '500'}
     return data
 
 @app.post("/getfileUrl")
-async def getFileUrl(validateFile: schema.ValidateFile):
+async def getFileUrl(validateFile: schema.ValidateFile, getCurrentUser: schema.TokenData = Depends(oauth2.get_current_user)):
     filename = validateFile.file_name
     write_logs("Get file url function entered")
 
@@ -460,9 +452,13 @@ async def getFileUrl(validateFile: schema.ValidateFile):
         write_logs("Get file url function complete")
         data = {'message': 'An error occured while retriving the file','status_code': '500'}
         return data
-    
+
+@app.get('/is_logged_in')
+async def is_logged_in(getCurrentUser: schema.TokenData = Depends(oauth2.get_current_user)):
+    return {'status_code': '200'}
+
 @app.get('/nexrad_s3_fetch_db')
-async def nexrad_s3_fetch_db():
+async def nexrad_s3_fetch_db(getCurrentUser: schema.TokenData = Depends(oauth2.get_current_user)):
 
     """Fetches the database from the S3 bucket
     
@@ -476,12 +472,9 @@ async def nexrad_s3_fetch_db():
     nexrad_main.write_logs("Status: 200, Message: Database fetched from S3 bucket")
 
     return Response(status_code=status.HTTP_200_OK)
-    
-
-
 
 @app.get('/nexrad_s3_fetch_month')
-async def nexrad_s3_fetch_month(nexrad_s3_fetch_month: schema.Nexrad_S3_fetch_month):
+async def nexrad_s3_fetch_month(nexrad_s3_fetch_month: schema.Nexrad_S3_fetch_month,getCurrentUser: schema.TokenData = Depends(oauth2.get_current_user)):
 
     """Generates the list of months for the year chosen by the user
     
@@ -503,7 +496,7 @@ async def nexrad_s3_fetch_month(nexrad_s3_fetch_month: schema.Nexrad_S3_fetch_mo
     return {"Month": nexrad_main.get_distinct_month(nexrad_s3_fetch_month.yearSelected)}
 
 @app.get('/nexrad_s3_fetch_day')
-async def nexrad_s3_fetch_day(nexrad_s3_fetch_day: schema.Nexrad_S3_fetch_day):
+async def nexrad_s3_fetch_day(nexrad_s3_fetch_day: schema.Nexrad_S3_fetch_day, getCurrentUser: schema.TokenData = Depends(oauth2.get_current_user)):
     
     """Generates the list of days for the month chosen by the user
     
@@ -528,7 +521,7 @@ async def nexrad_s3_fetch_day(nexrad_s3_fetch_day: schema.Nexrad_S3_fetch_day):
     return {"Day": nexrad_main.get_distinct_day(nexrad_s3_fetch_day.year, nexrad_s3_fetch_day.month)}
 
 @app.get('/nexrad_s3_fetch_station')
-async def nexrad_s3_fetch_station(nexrad_s3_fetch_station: schema.Nexrad_S3_fetch_station):
+async def nexrad_s3_fetch_station(nexrad_s3_fetch_station: schema.Nexrad_S3_fetch_station, getCurrentUser: schema.TokenData = Depends(oauth2.get_current_user)):
     
     """Generates the list of stations for the day chosen by the user
     
@@ -555,7 +548,7 @@ async def nexrad_s3_fetch_station(nexrad_s3_fetch_station: schema.Nexrad_S3_fetc
 
 
 @app.get('/nexrad_s3_fetch_file')
-async def nexrad_s3_fetch_file(nexrad_s3_fetch_file: schema.Nexrad_S3_fetch_file):
+async def nexrad_s3_fetch_file(nexrad_s3_fetch_file: schema.Nexrad_S3_fetch_file, getCurrentUser: schema.TokenData = Depends(oauth2.get_current_user)):
 
     """Generates the list of files for the station chosen by the user
         
@@ -595,7 +588,7 @@ async def nexrad_s3_fetch_file(nexrad_s3_fetch_file: schema.Nexrad_S3_fetch_file
 
 
 @app.post('/nexrad_s3_fetchurl')
-async def nexrad_s3_fetchurl(nexrad_s3_fetch: schema.Nexrad_S3_fetch_url):
+async def nexrad_s3_fetchurl(nexrad_s3_fetch: schema.Nexrad_S3_fetch_url, getCurrentUser: schema.TokenData = Depends(oauth2.get_current_user)):
 
     """Generates the link for the file in the nexrad S3 bucket
     
@@ -634,7 +627,7 @@ async def nexrad_s3_fetchurl(nexrad_s3_fetch: schema.Nexrad_S3_fetch_url):
 
 
 @app.get('/nexrad_s3_fetch_key')
-async def getKey(nexrad_s3_fetch: schema.Nexrad_S3_fetch_url):
+async def getKey(nexrad_s3_fetch: schema.Nexrad_S3_fetch_url, getCurrentUser: schema.TokenData = Depends(oauth2.get_current_user)):
     """Generates the key for the file in the nexrad S3 bucket
     
     Args:
@@ -659,7 +652,7 @@ async def getKey(nexrad_s3_fetch: schema.Nexrad_S3_fetch_url):
             return {'Key' : (o.get('Key'))}
 
 @app.post('/nexrad_s3_upload')
-async def uploadFiletoS3(nexrad_s3_upload: schema.Nexard_S3_upload_file):
+async def uploadFiletoS3(nexrad_s3_upload: schema.Nexard_S3_upload_file, getCurrentUser: schema.TokenData = Depends(oauth2.get_current_user)):
 
     """Uploads the file to the S3 bucket
 
@@ -688,7 +681,7 @@ async def uploadFiletoS3(nexrad_s3_upload: schema.Nexard_S3_upload_file):
 
 
 @app.post('/nexrad_s3_generate_user_link')
-async def generateUserLink(nexrad_s3_generate_url: schema.Nexrad_S3_generate_url):
+async def generateUserLink(nexrad_s3_generate_url: schema.Nexrad_S3_generate_url, getCurrentUser: schema.TokenData = Depends(oauth2.get_current_user)):
     """Generates the user link in public s3 bucket
 
     Args:
@@ -704,3 +697,43 @@ async def generateUserLink(nexrad_s3_generate_url: schema.Nexrad_S3_generate_url
     nexrad_main.write_logs(url)
     print(url)
     return {'User S3 URL': url}
+
+@app.post('/create_plot_table')
+async def create_plot_table():
+    database_file_name = "assignment_01.db"
+    database_file_path = os.path.join('data/',database_file_name)
+    db = sqlite3.connect(database_file_path)
+    cursor = db.cursor()
+    cursor.execute('''CREATE TABLE if not exists NEXRAD_PLOT (Id,State,City,ICAO_Location_Identifier,Coordinates,Lat,Lon)''')
+    df = pd.read_csv("data/Nexrad.csv")
+    df["Lon"] = -1 * df["Lon"]
+    df.to_sql('nexrad_plot', db, if_exists='append', index = False)
+    db.commit()
+    db.close()
+    return {'status_code': '200'}
+
+@app.post('/create_default_user')
+async def create_default_user():
+    database_file_name = "assignment_01.db"
+    database_file_path = os.path.join('data/',database_file_name)
+    db = sqlite3.connect(database_file_path)
+    cursor = db.cursor()
+    cursor.execute('''CREATE TABLE if not exists Users (id,username,hashed_password)''')
+    user= pd.read_sql_query("SELECT * FROM Users", db)
+    if len(user) == 0:
+        pwd_cxt = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        hashed_password = pwd_cxt.hash(("spring2023"))
+        cursor.execute("Insert into Users values (?,?,?)", (1,"damg7245",hashed_password))
+        db.commit()
+        db.close()
+    return {'status_code': '200'}
+
+@app.post('/retrieve_plot_data')
+async def retrieve_plot_data(getCurrentUser: schema.TokenData = Depends(oauth2.get_current_user)):
+    database_file_name = "assignment_01.db"
+    database_file_path = os.path.join('data/',database_file_name)
+    db = sqlite3.connect(database_file_path)
+    df = pd.read_sql_query("SELECT * FROM nexrad_plot", db)
+    df_dict = df.to_dict(orient='records')
+    db.close()
+    return {'df_dict':df_dict, 'status_code': '200'}

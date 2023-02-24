@@ -25,7 +25,6 @@ class goes_day(BaseModel):
 
 class goes_year(BaseModel):
     station: str
-    access_token: str
 
 class Nexrad_S3_generate_url(BaseModel):
     target_bucket: str
