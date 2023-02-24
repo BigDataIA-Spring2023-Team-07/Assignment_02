@@ -24,10 +24,10 @@ import os
 #     db.close()
 
 
-# if __name__ == "__main__":
-#     create_plot_table()
-#     st.title("Are you looking for SEVIR data?")
-#     st.text("Team07-Assignment1")
-#     st.text("Let us fetch that for you!")
-#     image = Image.open('image.png')
-#     st.image(image, caption='four humans working to fetch satelite data')
+if __name__ == "__main__":
+    create_plot_table()
+    st.title("Are you looking for GOES18 and NEXRAD data?")
+    st.text("Team07-Assignment1")
+    st.text("Let us fetch that for you!")
+    # image = Image.open('image.png')
+    # st.image(image, caption='four humans working to fetch satelite data')

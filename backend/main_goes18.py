@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import sqlite3
 from pathlib import Path
 import time
+import shutil
 
 # logging.basicConfig(filename = 'assignment_01.log',level=logging.INFO, force= True, format='%(asctime)s:%(levelname)s:%(message)s')
 
@@ -37,8 +38,8 @@ def create_connection():
     write_logs("starting connection to s3")
     s3client = boto3.client('s3',
                         region_name='us-east-1',
-                        aws_access_key_id = os.environ.get('AWS_ACCESS_KEY'),
-                        aws_secret_access_key = os.environ.get('AWS_SECRET_KEY')
+                        aws_access_key_id = os.environ.get('AWS_ACCESS_KEY1'),
+                        aws_secret_access_key = os.environ.get('AWS_SECRET_KEY1')
                         )
     write_logs("connected to s3")
 
@@ -121,6 +122,20 @@ def check_database_initilization():
     else:
         write_logs("Database file already exist")
         query_into_dataframe()
+
+def fetch_db():
+    s3 = create_connection()
+    bucket_name = "damg7245-team7"
+    key = "database.db"
+    s3.download_file(bucket_name, key, 'database.db')
+
+    source_file = 'database.db'
+    source_file = os.path.join('../Assignment_02', source_file)
+    destination_file = 'data/database.db'
+    destination_file = os.path.join('../Assignment_02', destination_file)
+
+    # Move the file to the destination directory
+    shutil.move(source_file, destination_file)
 
 
 def db_connection():
@@ -293,7 +308,7 @@ def copy_files_s3(key,filename):
     
     client_id=create_connection()
 
-    client_id.copy_object(Bucket='damg7245-demo', CopySource={"Bucket": 'noaa-goes18', "Key": key}, Key=filename)
+    client_id.copy_object(Bucket='damg7245-team7' , CopySource={"Bucket": 'noaa-goes18', "Key": key}, Key=filename)
     
     url='https://damg7245-demo.s3.amazonaws.com/' + filename
     write_logs("URL created for Personal bucket")
