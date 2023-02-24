@@ -108,62 +108,62 @@ def test_goes18_link_generation():
 
 def test_nexrad_file_retrival_main():
 
-    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": KBGM20110612_003045_V03.gz})
+    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": 'KBGM20110612_003045_V03.gz'})
     assert response.status_code == 200
     url = response.json()['Response']
     assert url == "https://noaa-nexrad-level2.s3.amazonaws.com/2011/06/12/KBGM/KBGM20110612_003045_V03.gz"
 
-    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": KARX20100512_014240_V03.gz})
+    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": 'KARX20100512_014240_V03.gz'})
     assert response.status_code == 200
     url = response.json()['Response']
     assert url == "https://noaa-nexrad-level2.s3.amazonaws.com/2010/05/12/KARX/KARX20100512_014240_V03.gz"
 
-    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": KABX20130902_002911_V06.gz})
+    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": 'KABX20130902_002911_V06.gz'})
     assert response.status_code == 200
     url = response.json()['Response']
     assert url == "https://noaa-nexrad-level2.s3.amazonaws.com/2013/09/02/KABX/KABX20130902_002911_V06.gz"
 
-    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": KBIS20001222_090728.gz})
+    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": 'KBIS20001222_090728.gz'})
     assert response.status_code == 200
     url = response.json()['Response']
     assert url == "https://noaa-nexrad-level2.s3.amazonaws.com/2000/12/22/KBIS/KBIS20001222_090728.gz"
 
-    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": KCCX20120203_013605_V03.gz})
+    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": 'KCCX20120203_013605_V03.gz'})
     assert response.status_code == 200
     url = response.json()['Response']
     assert url == "https://noaa-nexrad-level2.s3.amazonaws.com/2012/02/03/KCCX/KCCX20120203_013605_V03.gz"
 
-    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": KCBW20011213_002358.gz})
+    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": 'KCBW20011213_002358.gz'})
     assert response.status_code == 200
     url = response.json()['Response']
     assert url == "https://noaa-nexrad-level2.s3.amazonaws.com/2001/12/13/KCBW/KCBW20011213_002358.gz"
 
-    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": KBYX20150804_000940_V06.gz})
+    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": 'KBYX20150804_000940_V06.gz'})
     assert response.status_code == 200
     url = response.json()['Response']
     assert url == "https://noaa-nexrad-level2.s3.amazonaws.com/2015/08/04/KBYX/KBYX20150804_000940_V06.gz"
 
-    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": KAPX20120717_013219_V06.gz})
+    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": 'KAPX20120717_013219_V06.gz'})
     assert response.status_code == 200
     url = response.json()['Response']
     assert url == "https://noaa-nexrad-level2.s3.amazonaws.com/2012/07/17/KAPX/KAPX20120717_013219_V06.gz"
 
-    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": KAPX20140907_010223_V06.gz})
+    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": 'KAPX20140907_010223_V06.gz'})
     assert response.status_code == 200
     url = response.json()['Response']
     assert url == "https://noaa-nexrad-level2.s3.amazonaws.com/2014/09/07/KAPX/KAPX20140907_010223_V06.gz"
 
-    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": KCBW20080819_012424_V03.gz})
+    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": 'KCBW20080819_012424_V03.gz'})
     assert response.status_code == 200
     url = response.json()['Response']
     assert url == "https://noaa-nexrad-level2.s3.amazonaws.com/2008/08/19/KCBW/KCBW20080819_012424_V03.gz"
 
-    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": KLWX19931112_005128.gz})
+    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": 'KLWX19931112_005128.gz'})
     assert response.status_code == 200
     url = response.json()['Response']
     assert url == "https://noaa-nexrad-level2.s3.amazonaws.com/1993/11/12/KLWX/KLWX19931112_005128.gz"
 
-    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": KBOX20030717_014732.gz})
+    response = client.post(url = "/nexrad_get_download_link",  json = {"filename": 'KBOX20030717_014732.gz'})
     assert response.status_code == 200
     url = response.json()['Response']
     assert url == "https://noaa-nexrad-level2.s3.amazonaws.com/2003/07/17/KBOX/KBOX20030717_014732.gz"
