@@ -47,11 +47,11 @@ def get_nexrad_file_url(filename):
           write_logs("NEXRAD_File_Link_Retrieval: Download link generated for entered file name: " + filename)
           return final_url
         else:
-          write_logs("NEXRAD_File_Link_Retrieval: GET request to generated URL - Error Response: " + response.status_code)
+          write_logs("NEXRAD_File_Link_Retrieval: GET request to generated URL - Error Response: " + str(response.status_code))
           return response.status_code         
 
       except Exception as e:
-        write_logs("NEXRAD_File_Link_Retrieval: GET request to generated URL - Exception: " + e)
+        write_logs("NEXRAD_File_Link_Retrieval: GET request to generated URL - Exception: " + str(e))
         return e
 
     else:
