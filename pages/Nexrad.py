@@ -131,8 +131,3 @@ if yearSelected != None:
                                 st.success("Successfully uploaded to User S3 Bucket")
                                 st.markdown("**AWS S3 URL**")
                                 st.write(user_url)
-
-
-
-
-

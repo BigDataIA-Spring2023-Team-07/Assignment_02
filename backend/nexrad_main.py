@@ -21,7 +21,7 @@ cwd = os.getcwd()
 load_dotenv()
 
 # Navigate to the project directory
-project_dir = os.path.abspath(os.path.join(cwd, '..'))
+project_dir = os.path.abspath(os.path.join(cwd, ''))
 sys.path.insert(0, project_dir)
 os.environ['PYTHONPATH'] = project_dir + ':' + os.environ.get('PYTHONPATH', '')
 
@@ -38,18 +38,21 @@ aws_secret_access_key=os.environ.get('AWS_LOG_SECRET_KEY'))
 
 def fetch_db():
 
+    print("Inside fetch_db")
+
+
     s3 = createConnection()
     bucket_name = "damg7245-team7"
     key = "database.db"
     s3.download_file(bucket_name, key, 'database.db')
 
-    source_file = 'api_codes/database.db'
-    source_file = os.path.join(project_dir, source_file)
-    destination_file = 'data/database.db'
-    destination_file = os.path.join(project_dir, destination_file)
+    # source_file = 'api_codes/database.db'
+    # source_file = os.path.join(project_dir, source_file)
+    # destination_file = 'data/database.db'
+    # destination_file = os.path.join(project_dir, destination_file)
 
     # Move the file to the destination directory
-    shutil.move(source_file, destination_file)
+    # shutil.move(source_file, destination_file)
 
 
 
@@ -86,7 +89,7 @@ def get_distinct_month(yearSelected):
         month (list): The list of months
     """
 
-    connection = sqlite3.connect(database_path)
+    connection = sqlite3.connect('database.db')
     cursor = connection.cursor()
     month = pd.read_sql_query("SELECT DISTINCT Month FROM nexrad_" + yearSelected, connection)
     month = month['Month'].tolist()
@@ -105,7 +108,8 @@ def get_distinct_day(yearSelected, monthSelected):
         day (list): The list of days
     """
     
-    connection = sqlite3.connect(database_path)
+    connection = sqlite3.connect('database.db')
+
     cursor = connection.cursor()
     day = pd.read_sql_query("SELECT DISTINCT Day FROM nexrad_" + yearSelected + " WHERE year = " + yearSelected + " AND Month = " + monthSelected, connection)
     day = day['Day'].tolist()
@@ -125,7 +129,8 @@ def get_distinct_station(yearSelected, monthSelected, daySelected):
         station (list): The list of stations
     """
         
-    connection = sqlite3.connect(database_path)
+    connection = sqlite3.connect('database.db')
+
     cursor = connection.cursor()
     station = pd.read_sql_query("SELECT DISTINCT Station FROM nexrad_" + yearSelected + " where year = " + yearSelected + " and month = " + monthSelected + " and day = " + daySelected, connection)
     station = station['Station'].tolist()
