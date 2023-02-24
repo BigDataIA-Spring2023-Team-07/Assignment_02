@@ -22,7 +22,7 @@ no_sidebar_style = """
 
 def create_plot_table():
     response = requests.post('http://127.0.0.1:8000/create_plot_table')
-    return response   
+    return response
 
 def create_default_user():
     response = requests.post('http://127.0.0.1:8000/create_default_user')
