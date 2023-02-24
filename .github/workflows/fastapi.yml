@@ -25,7 +25,7 @@ jobs:
         run: pip install pipenv
       - 
         name: Run tests
-        working-directory: ./fastapi
+        working-directory: ./
         run: |
           pipenv install -r requirements.txt
           pipenv run pytest -v test.py                     
