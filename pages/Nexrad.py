@@ -7,6 +7,14 @@ import os
 import sqlite3
 import warnings
 import ast
+import os
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
+ACCESS_TOKEN = os.environ["access_token"]
+headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
 
 import pandas as pd
 warnings.filterwarnings("ignore")
@@ -16,14 +24,6 @@ data_path = 'data/'
 database_file_name = 'assignment_01.db'
 database_path = os.path.join('data/', database_file_name)
 data_files = os.listdir('data/')
-
-
-FASTAPI_URL = "http://localhost:8000/nexrad_s3_fetch_db"
-response = requests.get(FASTAPI_URL)
-if response.status_code == 200:
-    st.success("Successfully connected to the database")
-else:
-    st.error("Failed to connect to the database")
 
 st.title("Generate Link Nexrad")
 
@@ -39,7 +39,7 @@ yearSelected = st.selectbox(
 # User selects the month
 if yearSelected != None:
     FASTAPI_URL = "http://localhost:8000/nexrad_s3_fetch_month"
-    response = requests.get(FASTAPI_URL, json={"yearSelected": yearSelected})
+    response = requests.get(FASTAPI_URL, json={"yearSelected": yearSelected},headers=headers)
     monthSelected = None
     if response.status_code == 200:
         month = response.json()
@@ -47,11 +47,14 @@ if yearSelected != None:
         monthSelected = st.selectbox(
             'Select the month',
             tuple(month), key = 'month')
+    else:
+        st.error('Either you have not logged in or else your session has expired.', icon="🚨")
+    
 
     # User selects the day
     if monthSelected != None:
         FASTAPI_URL = "http://localhost:8000/nexrad_s3_fetch_day"
-        response = requests.get(FASTAPI_URL, json={"year": yearSelected, "month": monthSelected})
+        response = requests.get(FASTAPI_URL, json={"year": yearSelected, "month": monthSelected},headers=headers)
         daySelected = None
         if response.status_code == 200:
             day = response.json()
@@ -59,11 +62,13 @@ if yearSelected != None:
             daySelected = st.selectbox(
                 'Select the day',
                 tuple(day), key = 'day')
+        else:
+            st.error('Either you have not logged in or else your session has expired.', icon="🚨")
 
         # User selects the station
         if daySelected != None:
             FASTAPI_URL = "http://localhost:8000/nexrad_s3_fetch_station"
-            response = requests.get(FASTAPI_URL, json={"year": yearSelected, "month": monthSelected, "day": daySelected})
+            response = requests.get(FASTAPI_URL, json={"year": yearSelected, "month": monthSelected, "day": daySelected},headers=headers)
             stationSelected = None
             if response.status_code == 200:
                 station = response.json()
@@ -71,13 +76,15 @@ if yearSelected != None:
                 stationSelected = st.selectbox(
                     'Select the station',
                     tuple(station), key = 'station')
+            else:
+                st.error('Either you have not logged in or else your session has expired.', icon="🚨")
 
         
         # User selects the file
             with st.spinner('Fetching Files...'):
                 if stationSelected != None:
                     FASTAPI_URL = "http://localhost:8000/nexrad_s3_fetch_file"
-                    response = requests.get(FASTAPI_URL, json={"year": yearSelected, "month": monthSelected, "day": daySelected, "station": stationSelected})
+                    response = requests.get(FASTAPI_URL, json={"year": yearSelected, "month": monthSelected, "day": daySelected, "station": stationSelected},headers=headers)
                     fileSelected = None
                     if response.status_code == 200:
                         file = response.json()
@@ -85,19 +92,23 @@ if yearSelected != None:
                         fileSelected = st.selectbox(
                             'Select the file',
                             tuple(file), key = 'file')
+                    else:
+                        st.error('Either you have not logged in or else your session has expired.', icon="🚨")
 
 
             if st.button("Submit"):
                 with st.spinner('Generating Public S3 Link...'):
                     FASTAPI_URL = "http://localhost:8000/nexrad_s3_fetchurl"
 
-                    response = requests.post(FASTAPI_URL, json={"year": yearSelected, "month": monthSelected, "day": daySelected, "station": stationSelected, "file": fileSelected})
+                    response = requests.post(FASTAPI_URL, json={"year": yearSelected, "month": monthSelected, "day": daySelected, "station": stationSelected, "file": fileSelected},headers=headers)
                     if response.status_code == 200:
                         generated_url = response.json()
                         st.success("Successfully generated Public S3 link")
                         st.markdown("**Public URL**")
 
                         st.write(generated_url['Public S3 URL'])
+                    elif response.status_code == 401:
+                        st.error('Either you have not logged in or else your session has expired.', icon="🚨")
                     else:
                         st.error("Error in generating Public S3 link")
                         st.write(response.json())
@@ -115,24 +126,25 @@ if yearSelected != None:
 
                     
                     FASTAPI_URL = "http://localhost:8000/nexrad_s3_fetch_key"
-                    response = requests.get(FASTAPI_URL, json={"year": yearSelected, "month": monthSelected, "day": daySelected, "station": stationSelected, "file": fileSelected})
+                    response = requests.get(FASTAPI_URL, json={"year": yearSelected, "month": monthSelected, "day": daySelected, "station": stationSelected, "file": fileSelected},headers=headers)
                     if response.status_code == 200:
                         obj_key = response.json()['Key']
 
                         FASTAPI_URL = "http://localhost:8000/nexrad_s3_upload"
-                        response = requests.post(FASTAPI_URL, json={"key": obj_key, "source_bucket": 'noaa-nexrad-level2', "target_bucket": 'damg7245-team7'})
+                        response = requests.post(FASTAPI_URL, json={"key": obj_key, "source_bucket": 'noaa-nexrad-level2', "target_bucket": 'damg7245-team7'},headers=headers)
                         if response.status_code == 200:
                             user_key = response.json()['Uploaded_Key']
                             FASTAPI_URL = "http://localhost:8000/nexrad_s3_generate_user_link"
 
-                            response = requests.post(FASTAPI_URL, json={"target_bucket": 'damg7245-team7', "user_key": user_key})
+                            response = requests.post(FASTAPI_URL, json={"target_bucket": 'damg7245-team7', "user_key": user_key},headers=headers)
                             if response.status_code == 200:
                                 user_url = response.json()['User S3 URL']
                                 st.success("Successfully uploaded to User S3 Bucket")
                                 st.markdown("**AWS S3 URL**")
                                 st.write(user_url)
-
-
-
-
-
+                            else:
+                                st.error('Either you have not logged in or else your session has expired.', icon="🚨")
+                        else:
+                            st.error('Either you have not logged in or else your session has expired.', icon="🚨")
+                    else:
+                        st.error('Either you have not logged in or else your session has expired.', icon="🚨")
