@@ -174,46 +174,64 @@ def uploadcsv_goes_s3(df):
     s3_key = 'data/df_goes18.csv'
     s3_resource.Object(bucket_name, s3_key).put(Body=csv_buffer.getvalue())
 
+def create_goes_json():
+    """for creating json of all the files in a particular station
+
+    Args:
+        
+    """
+    client_id=create_s3_client()
+    generatedJson = {}
+    # write_logs("fetching objects in NOAA s3 bucket")
+    paginator = client_id.get_paginator('list_objects')
+    noaa_bucket = paginator.paginate(Bucket='noaa-goes18',Prefix='ABI-L1b-RadC/',Delimiter="/" ,PaginationConfig={"PageSize": 100})
+    
+    
+    for page in noaa_bucket:
+        for o in page.get('CommonPrefixes'):
+            generatedJson[o.get('Prefix').split('/')[1]] = {}
+    
+    for y in list(generatedJson.keys()):
+        result = client_id.list_objects(Bucket='noaa-goes18', Prefix= 'ABI-L1b-RadC' + '/' + y + '/' , Delimiter='/')
+        for o in result.get('CommonPrefixes'):
+            generatedJson[y][o.get('Prefix').split('/')[2]] = []
+
+    for y in list(generatedJson.keys()):
+        for d in list(generatedJson[y].keys()):
+            result = client_id.list_objects(Bucket='noaa-goes18', Prefix= 'ABI-L1b-RadC' + '/' +y+'/'+d+'/', Delimiter='/')
+            for o in result.get('CommonPrefixes'):
+                generatedJson[y][d].append(o.get('Prefix').split('/')[3])
+                # print('a')
+
+    return generatedJson
+    
 def create_goes_df():
     """for creatign dataframe of all the files in a particular station
 
     Args:
-        client_id (boto3.client): aws client id
-    """
-    client_id=create_s3_client()
-    # write_logs("fetching objects in NOAA s3 bucket")
-    paginator = client_id.get_paginator('list_objects_v2')
-    noaa_bucket = paginator.paginate(Bucket='noaa-goes18', PaginationConfig={"PageSize": 50})
-    # write_logs("Writing Files in list from NOAA bucket")
-    station=[]
-    year=[]
-    day=[]
-    hour=[]
-    
-    for count, page in enumerate(noaa_bucket):
-        files = page.get("Contents")
-        for file in files:
-            
-            if 'ABI-L1b-RadC' not in file['Key'].split("/")[0]:
-                break
-            
-            # if ((file['Key'].split("/")[0] not in station) or (file['Key'].split("/")[1] not in year) or (file['Key'].split("/")[2] not in day) or (file['Key'].split("/")[3] not in hour)):
-            station.append(file['Key'].split("/")[0])
-            year.append(file['Key'].split("/")[1])
-            day.append(file['Key'].split("/")[2])
-            hour.append(file['Key'].split("/")[3])
-            print(file['Key'])
-        else:
-            continue
-        break
         
-    df_goes18=pd.DataFrame({'Station': station,
-     'Year': year,
-     'Day': day,
-     'Hour': hour
-    })
-    df_goes18.drop_duplicates(inplace=True)
+    """
+    year_lst = []
+    day_lst = []
+    hour_lst=[]
+    data = create_goes_json()
     
+    for year in data:
+        for day in data[year]:
+            for hour in data[year][day]:
+                year_lst.append(year)
+                day_lst.append(day)
+                hour_lst.append(hour)
+
+    year_lst = [str(x) for x in year_lst]
+    day_lst = [str(x) for x in day_lst]
+    hour_lst = [str(x) for x in hour_lst]
+
+    # day_lst = [s[1:] if s.startswith('0') else s for s in month_lst if s != '0']
+    # hour_lst =   [s[1:] if s.startswith('0') else s for s in day_lst if s != '0']
+
+    
+    df_goes18 = pd.DataFrame({'Station': 'ABI-L1b-RadC', 'Year': year_lst, 'Day': day_lst, 'Hour': hour_lst})
     uploadcsv_goes_s3(df_goes18)
     # df_goes18.to_csv('data/df_goes18.csv',index=False)
     # write_logs("File created in data folder")

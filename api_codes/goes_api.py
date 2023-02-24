@@ -46,6 +46,21 @@ class goes_url(BaseModel):
     hour: str
     file: str
 
+@app.get('/s3_fetch_db')
+async def s3_fetch_db():
+
+    """Fetches the database from the S3 bucket
+    
+    Args:
+        None
+        
+    Returns:
+        None"""
+
+    main_goes18.fetch_db()
+
+    return Response(status_code=status.HTTP_200_OK)
+
 @app.get('/goes_station')
 async def grab_station():
     """for pulling all the stations in the file from database
