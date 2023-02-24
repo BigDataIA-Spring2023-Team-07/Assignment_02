@@ -16,6 +16,7 @@ sys.path.insert(0, project_dir)
 os.environ['PYTHONPATH'] = project_dir + ':' + os.environ.get('PYTHONPATH', '')
 
 from backend import nexrad_main
+from backend import nexrad_file_retrieval_main
 from pydantic import BaseModel
 import pandas as pd
 import re
@@ -59,6 +60,8 @@ class Nexrad_S3_generate_url(BaseModel):
     target_bucket: str
     user_key: str
 
+class Nexrad_fetch_filename(BaseModel):
+    filename: str
 
 @app.get('/nexrad_s3_fetch_db')
 async def nexrad_s3_fetch_db():
@@ -303,3 +306,19 @@ async def generateUserLink(nexrad_s3_generate_url: Nexrad_S3_generate_url):
     nexrad_main.write_logs(url)
     print(url)
     return {'User S3 URL': url}
+
+@app.post('/nexrad_get_download_link')
+async def nexrad_download_link(nexrad_filename: Nexrad_fetch_filename):
+
+    """Generates the link for the file in the nexrad S3 bucket
+    
+    Args:
+        filename (str): filename entered by the user
+        
+    Returns:
+        str: Returns the response from backend function get_nexrad_file_url"""
+    
+    nexrad_file_retrieval_main.write_logs("NEXRAD_File_Link_Retrieval: API Request Initiated")
+    
+    response = nexrad_file_retrieval_main.get_nexrad_file_url(nexrad_filename.filename)
+    return {"Response": response}
