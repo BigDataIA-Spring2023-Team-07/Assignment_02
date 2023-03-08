@@ -2,7 +2,9 @@
 
 **Codelab Link:** https://codelabs-preview.appspot.com/?file_id=1mYE7swaLKECj7j_yHg2l7awS30_TEiA891EELlxv6H8#0  
 
-**Streamlit link:** 
+**Streamlit link:** http://34.73.178.159:8501/login
+
+**Login Credentials** username - damg7245, password - spring2023
 
 
 
