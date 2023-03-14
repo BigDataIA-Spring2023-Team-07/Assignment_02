@@ -56,7 +56,7 @@ The UI was developed with the help of the python library of Streamlit framework.
 
 ## Deployment - Docker + GCP
 
-- Both the backend and frontend are individually containerized using docker. Then docker-compose is used to bind the two containers and are deployed on the AWS EC2 instance
+- Both the backend and frontend are individually containerized using docker. Then docker-compose is used to bind the two containers and are deployed on the GCP instance
 - The usage activity is logged in AWS Cloudwatch and we have created a module for unit testing using the python library ‘Pytest’. 
 
 ## Steps to run the application locally - 
