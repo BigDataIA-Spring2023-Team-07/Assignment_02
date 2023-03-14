@@ -117,6 +117,9 @@ networks:
 ```
 - Execute the above docker compose file (docker-compose.yml) with the command ‘docker compose up’
 
+## File Structure - 
+
+Please note currently, FASTAPI endpoints for multiple modules are not routed through individual modules instead are clubbed in main.py
 
 
 #### Attestation
