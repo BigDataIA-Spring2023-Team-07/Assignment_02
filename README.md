@@ -4,6 +4,7 @@
 > [Codelabs Documentation](https://codelabs-preview.appspot.com/?file_id=1mYE7swaLKECj7j_yHg2l7awS30_TEiA891EELlxv6H8#0 )<br>
 > [FastAPI Docs](http://34.73.178.159:8000/docs) <br>
 > [Docker Images](https://hub.docker.com/r/shankardh/team7/tags) <br>
+> [Great Expectations](http://34.75.54.205:8086/index.html) <br>
 
 ## Objective
 
